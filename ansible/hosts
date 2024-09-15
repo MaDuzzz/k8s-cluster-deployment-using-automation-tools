@@ -1,0 +1,29 @@
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=cloud
+ansible_ssh_pass=1  # password for the cloud user
+ansible_become_pass=1  # password for the root user
+ansible_become_user=root
+ansible_become_method=sudo
+ansible_become=true
+ansible_connection=ssh
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_port=22
+cluster_name=dungtm3-cluster
+bootstrap_token=pbtht6.es7uuieqhrcjshmy
+serviceSubnet=192.168.180.0/24
+podSubnet=10.58.201.0/24
+
+[hosts]
+192.168.180.1
+
+[masternode]
+192.168.180.191 hostname=k8s-master-node
+
+[workernodes]
+192.168.180.120
+192.168.180.177
+
+[cluster:children]
+masternode
+workernodes

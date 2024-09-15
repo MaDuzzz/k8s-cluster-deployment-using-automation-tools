@@ -1,0 +1,22 @@
+---
+- name: Prepare and Install all neccessary packages for all nodes in cluster
+  hosts: cluster
+  become: true
+  remote_user: cloud
+  roles:
+    - docker
+    - k8s-general
+
+- name: Prepare and Do init cluster
+  hosts: masternode
+  become: true
+  remote_user: cloud
+  roles:
+    - k8s-masternode
+
+- name: Install Calico Network Plugin for all nodes in cluster
+  hosts: cluster
+  become: true
+  remote_user: cloud
+  roles:
+    - calico
