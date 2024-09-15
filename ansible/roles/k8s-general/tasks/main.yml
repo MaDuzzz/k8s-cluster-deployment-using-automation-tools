@@ -1,0 +1,90 @@
+---
+- name: Turn off all swap spaces
+  ansible.builtin.command: swapoff -a
+  ignore_errors: false
+  changed_when: true
+
+- name: Remove swap entry from /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^\s*[^#]*swap'
+    state: absent
+
+- name: Ensure no swap is enabled
+  ansible.builtin.command: swapon --show
+  register: swap_status
+  changed_when: false
+
+- name: Create /etc/apt/keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+- name: Download Kubernetes APT Release key
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+    dest: /tmp/Release.key
+    mode: "0755"
+
+- name: Convert Release key to keyring
+  ansible.builtin.command: >
+    gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key
+
+  args:
+    removes: /tmp/Release.key
+
+- name: Add Kubernetes APT repository to sources list
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+    create: true
+    mode: "0755"
+
+- name: Install kubelet, kubeadm, and kubectl
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: true
+
+- name: Hold kubelet, kubeadm, and kubectl packages at their current version
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: fixed
+
+- name: Get cri-dockered debian installation file from github
+  ansible.builtin.get_url:
+    url: https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+    dest: /tmp/
+    mode: "0664"
+
+- name: Install cri-dockered
+  ansible.builtin.package:
+    name: /tmp/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+
+- name: Get crictl installation file from github
+  ansible.builtin.get_url:
+    url: https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-v1.31.0-linux-amd64.tar.gz
+    dest: /tmp/
+    mode: "0664"
+
+- name: Extract crictl binary
+  ansible.builtin.unarchive:
+    src: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
+    dest: /usr/local/bin
+    remote_src: true
+
+- name: Clean up cri-dockered debian file
+  ansible.builtin.file:
+    path: /tmp/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+    state: absent
+
+- name: Clean up crictl tarball
+  ansible.builtin.file:
+    path: /tmp/crictl-v1.26.0-linux-amd64.tar.gz
+    state: absent
