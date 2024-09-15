@@ -72,12 +72,12 @@
     mode: "0664"
 
 - name: Install cri-dockered
-  ansible.builtin.package:
-    name: /tmp/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+  ansible.builtin.apt:
+    deb: /tmp/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
 
 - name: Get crictl installation file from github
   ansible.builtin.get_url:
-    url: https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-v1.31.0-linux-amd64.tar.gz
+    url: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.0/crictl-v1.31.0-linux-amd64.tar.gz
     dest: /tmp/
     mode: "0664"
 
