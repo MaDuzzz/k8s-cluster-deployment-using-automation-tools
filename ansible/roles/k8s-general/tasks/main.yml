@@ -15,47 +15,55 @@
   register: swap_status
   changed_when: false
 
-- name: Create /etc/apt/keyrings directory
-  ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: "0755"
-- name: Download Kubernetes APT Release key
-  ansible.builtin.get_url:
-    url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
-    dest: /tmp/Release.key
-    mode: "0755"
+- name: Check if k8s tools installed already
+  ansible.builtin.command: kubelet --version
+  changed_when: false
+  register: k8stools_installed
 
-- name: Convert Release key to keyring
-  ansible.builtin.command: >
-    gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key
+- name: Install k8s tools (if needed)
+  when: k8stools_installed.failed
+  block:
+    - name: Create /etc/apt/keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+    - name: Download Kubernetes APT Release key
+      ansible.builtin.get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+        dest: /tmp/Release.key
+        mode: "0755"
 
-  args:
-    removes: /tmp/Release.key
+    - name: Convert Release key to keyring
+      ansible.builtin.command: >
+        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key
 
-- name: Add Kubernetes APT repository to sources list
-  ansible.builtin.lineinfile:
-    path: /etc/apt/sources.list.d/kubernetes.list
-    line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
-    create: true
-    mode: "0755"
+      args:
+        removes: /tmp/Release.key
 
-- name: Install kubelet, kubeadm, and kubectl
-  ansible.builtin.apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: present
-    update_cache: true
+    - name: Add Kubernetes APT repository to sources list
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list.d/kubernetes.list
+        line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+        create: true
+        mode: "0755"
 
-- name: Hold kubelet, kubeadm, and kubectl packages at their current version
-  ansible.builtin.apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: fixed
+    - name: Install kubelet, kubeadm, and kubectl
+      ansible.builtin.apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+        update_cache: true
+
+    - name: Hold kubelet, kubeadm, and kubectl packages at their current version
+      ansible.builtin.apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: fixed
 
 - name: Get cri-dockered debian installation file from github
   ansible.builtin.get_url:
@@ -86,5 +94,5 @@
 
 - name: Clean up crictl tarball
   ansible.builtin.file:
-    path: /tmp/crictl-v1.26.0-linux-amd64.tar.gz
+    path: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
     state: absent
