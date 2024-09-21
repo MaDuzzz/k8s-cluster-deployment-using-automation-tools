@@ -2,21 +2,29 @@
 - name: Prepare and Install all neccessary packages for all nodes in cluster
   hosts: cluster
   become: true
-  remote_user: cloud
+  remote_user: "{{ ansible_user }}"
   roles:
+    - general
     - docker
     - k8s-general
 
-- name: Prepare and Do init cluster
+- name: Prepare and Initialize cluster
   hosts: masternode
   become: true
-  remote_user: cloud
+  remote_user: "{{ ansible_user }}"
   roles:
     - k8s-masternode
 
-- name: Install Calico Network Plugin for all nodes in cluster
-  hosts: cluster
+- name: Join all worker nodes into cluster
+  hosts: workernodes
   become: true
-  remote_user: cloud
+  remote_user: "{{ ansible_user }}"
+  roles:
+    - k8s-workernodes
+
+- name: Install Calico Network Plugin on master node
+  hosts: masternode
+  become: true
+  remote_user: "{{ ansible_user }}"
   roles:
     - calico
