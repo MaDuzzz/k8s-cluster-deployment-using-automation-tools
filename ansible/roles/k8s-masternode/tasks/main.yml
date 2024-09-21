@@ -1,0 +1,41 @@
+---
+- name: Ensure folder to store kubeadm configuration file exists
+  file:
+    path: "/home/{{ ansible_user }}/kubeadm_config/"
+    state: directory
+    mode: '0755'  # Set permissions as needed
+
+- name: Copy kubeadm template configuration to target directory
+  template:
+    src: "kubeadm.yml"
+    dest: "/home/{{ ansible_user }}/kubeadm_config/"  # Change the filename as needed
+
+- name: Pull necessary docker images before init cluster
+  command: kubeadm config images pull --config=kubeadm.yml
+  args:
+    chdir: "/home/{{ ansible_user }}/kubeadm_config/"
+
+- name: Init cluster
+  command: kubeadm init --config=kubeadm.yml
+  args:
+    chdir: "/home/{{ ansible_user }}/kubeadm_config/"
+  ignore_errors: true
+
+- name: Configure kube config
+  block:
+    - name: Create .kube directory
+      file:
+        path: "/home/{{ ansible_user }}/.kube"
+        state: directory
+        mode: '0755'  # Set permissions as needed
+
+    - name: Copy admin.conf to kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "/home/{{ ansible_user }}/.kube/config"
+        owner: "{{ ansible_user }}"  # Set the owner to the current user
+        group: "{{ ansible_user }}"  # Set the group to the current user
+        mode: '0644'  # Set permissions as needed
+      # ignore_errors: true  # Optional: ignore errors for interactive prompts
+        remote_src: true
+
