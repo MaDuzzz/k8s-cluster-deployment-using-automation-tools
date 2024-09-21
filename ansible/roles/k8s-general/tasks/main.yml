@@ -117,3 +117,6 @@
       ansible.builtin.file:
         path: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
         state: absent
+
+- name: Execute modprobe to load br_netfilter
+  command: modprobe br_netfilter
