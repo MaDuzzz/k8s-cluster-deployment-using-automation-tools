@@ -1,0 +1,26 @@
+---
+- name: Change hostname of node
+  hostname:
+    name: "{{ hostname }}"
+
+- name: Update /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1 {{ hostname }}"
+    state: present
+
+- name: Ensure the new hostname is reflected in /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }} {{ hostname }}"
+    state: present
+
+- name: Install necessary packages
+  apt:
+    name:
+      - socat
+      - net-tools
+    state: present
+    update_cache: true
+  
