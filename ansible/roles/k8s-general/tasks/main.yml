@@ -19,9 +19,10 @@
   ansible.builtin.command: kubelet --version
   changed_when: false
   register: k8stools_installed
+  ignore_errors: true
 
 - name: Install k8s tools (if needed)
-  when: k8stools_installed.failed
+  when: k8stools_installed.rc != 0
   block:
     - name: Create /etc/apt/keyrings directory
       ansible.builtin.file:
