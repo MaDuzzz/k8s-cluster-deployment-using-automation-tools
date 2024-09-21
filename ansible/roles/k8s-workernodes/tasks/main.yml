@@ -1,0 +1,17 @@
+---
+- name: Ensure folder to store kubeadm configuration file exists
+  file:
+    path: "/home/{{ ansible_user }}/kubeadm_config/"
+    state: directory
+    mode: '0755'  # Set permissions as needed
+
+- name: Copy kubeadm template configuration to target directory
+  template:
+    src: "kubeadm.yml"
+    dest: "/home/{{ ansible_user }}/kubeadm_config/"  # Change the filename as needed
+
+- name: Join cluster
+  command: kubeadm join --config=kubeadm.yml
+  args:
+    chdir: "/home/{{ ansible_user }}/kubeadm_config/"
+  ignore_errors: true

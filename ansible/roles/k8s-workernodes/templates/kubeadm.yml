@@ -1,0 +1,33 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: "{{ groups["masternode"][0] }}:6443"
+    token: "{{ bootstrap_token }}"
+    caCertHashes:
+      - "sha256:88b1556e37ab62ac33ffd4869297c12661ed6b19a57c6af5cb37af67aed52dbd"
+nodeRegistration:
+  name: "{{ hostname }}"
+  criSocket: unix:///var/run/cri-dockerd.sock
+  imagePullPolicy: IfNotPresent
+
+---
+apiServer: {}
+apiVersion: kubeadm.k8s.io/v1beta3
+caCertificateValidityPeriod: 87600h0m0s
+certificateValidityPeriod: 8760h0m0s
+certificatesDir: /etc/kubernetes/pki
+clusterName: "{{ cluster_name }}"
+controllerManager: {}
+encryptionAlgorithm: RSA-2048
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: "registry.k8s.io"
+kind: ClusterConfiguration
+kubernetesVersion: v1.28.14
+networking:
+  dnsDomain: cluster.local
+  podSubnet: "{{ podSubnet }}"
+proxy: {}
+scheduler: {}
