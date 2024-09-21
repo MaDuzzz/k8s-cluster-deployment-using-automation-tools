@@ -1,0 +1,36 @@
+---
+- name: Ensure folder to store calico manifests exists
+  file:
+    path: "/home/{{ ansible_user }}/calico/"
+    state: directory
+    mode: "0755"
+
+- name: Copy tigera-operator file
+  copy:
+    src: "tigera-operator.yaml"
+    dest: "/home/{{ ansible_user }}/calico/"
+    mode: "0664"
+    remote_src: false
+
+- name: Copy custom-resources file
+  template:
+    src: "custom-resources.yaml"
+    dest: "/home/{{ ansible_user }}/calico/"
+
+- name: Install Tigera Calico operator
+  command: kubectl create -f tigera-operator.yaml
+  args:
+    chdir: "/home/{{ ansible_user }}/calico"
+  register: calico_operator_install
+  ignore_errors: true  # Optional: Ignore errors if already installed
+  environment:
+    KUBECONFIG: "/etc/kubernetes/admin.conf"
+
+- name: Install Calico custom resources
+  command: kubectl create -f custom-resources.yaml
+  args:
+    chdir: "/home/{{ ansible_user }}/calico"
+  when: calico_operator_install.rc == 0  # Run this task only if the previous task succeeded
+  environment:
+    KUBECONFIG: "/etc/kubernetes/admin.conf"
+
