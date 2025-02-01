@@ -1,0 +1,7 @@
+openstack_configuration = {
+  user_name   = "<usename_string>"
+  tenant_name = "<tenantname_string>"
+  password    = "<password_string>"
+  auth_url    = "http://<openstack_auth_url_string>:5000/v3"
+  region      = "RegionOne"
+}
