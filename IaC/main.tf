@@ -63,7 +63,8 @@ resource "openstack_compute_instance_v2" "k8s_master_compute" {
 }
 
 resource "openstack_compute_instance_v2" "k8s_worker_compute" {
-  name            = "worker-compute"
+  for_each        = var.k8s_worker_compute
+  name            = each.value
   image_id        = data.openstack_images_image_v2.ubuntu_vm_image.id
   flavor_id       = openstack_compute_flavor_v2.k8s_worker_flavor.id
   security_groups = [openstack_networking_secgroup_v2.k8s_secgrp.name]

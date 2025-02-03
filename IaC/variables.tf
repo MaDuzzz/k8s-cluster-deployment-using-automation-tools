@@ -8,3 +8,8 @@ variable "openstack_configuration" {
   })
   sensitive = true
 }
+
+variable "k8s_worker_compute" {
+  type    = set(any)
+  default = ["k8s-worker-node1", "k8s-worker-node2"]
+}

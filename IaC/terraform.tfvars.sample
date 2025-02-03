@@ -5,3 +5,5 @@ openstack_configuration = {
   auth_url    = "http://<openstack_auth_url_string>:5000/v3"
   region      = "RegionOne"
 }
+
+k8s_worker_compute = ["k8s-worker1", "k8s-worker2"]
