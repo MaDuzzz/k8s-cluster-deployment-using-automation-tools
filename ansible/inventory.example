@@ -1,0 +1,27 @@
+[all:vars]
+ansible_connection=ssh
+ansible_ssh_port=22
+ansible_ssh_user=cloud
+ansible_ssh_pass=1
+ansible_become_pass=1
+ansible_become_user=root
+ansible_become=true
+ansible_become_method=sudo
+ansible_python_interpreter=/usr/bin/python3
+
+bootstrap_token=9a08jv.c0izixklcxtmnze7
+cluster_name=maduzzCluster
+podSubnet=10.128.58.0/24
+
+[cluster:children]
+masternode
+workernodes
+
+[masternode]
+192.168.180.180 hostname=master180
+
+[workernodes]
+192.168.180.206 hostname=worker206
+192.168.180.129 hostname=worker129
+192.168.180.225 hostname=worker225
+
