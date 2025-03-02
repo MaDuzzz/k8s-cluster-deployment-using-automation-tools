@@ -10,7 +10,7 @@ bootstrapTokens:
       - authentication
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: "{{ groups["masternode"][0] }}"
+  advertiseAddress: '{{ groups["masternode"][0] }}'
   bindPort: 6443
 nodeRegistration:
   criSocket: unix:///var/run/cri-dockerd.sock
