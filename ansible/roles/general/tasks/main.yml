@@ -1,20 +1,27 @@
 ---
-- name: Change hostname of node
-  hostname:
-    name: "{{ hostname }}"
+- name: Copy auto script
+  copy:
+    src: resize_root_volume.sh
+    dest: /usr/local/bin/resize_root_volume.sh
+    mode: "0755"
+
+- name: Extend path / volume
+  command: /usr/local/bin/resize_root_volume.sh
 
 - name: Update /etc/hosts
-  lineinfile:
-    path: /etc/hosts
-    regexp: '^127\.0\.1\.1'
-    line: "127.0.1.1 {{ hostname }}"
-    state: present
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
 
 - name: Ensure the new hostname is reflected in /etc/hosts
   lineinfile:
     path: /etc/hosts
     line: "{{ ansible_default_ipv4.address }} {{ hostname }}"
     state: present
+
+- name: Change hostname of node
+  hostname:
+    name: "{{ hostname }}"
 
 - name: Install necessary packages
   apt:
@@ -23,4 +30,3 @@
       - net-tools
     state: present
     update_cache: true
-  

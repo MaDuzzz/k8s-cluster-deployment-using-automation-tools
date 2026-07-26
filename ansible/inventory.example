@@ -2,26 +2,35 @@
 ansible_connection=ssh
 ansible_ssh_port=22
 ansible_ssh_user=cloud
-ansible_ssh_pass=1
-ansible_become_pass=1
+ansible_ssh_pass=1123123
+ansible_become_pass=123123
 ansible_become_user=root
 ansible_become=true
 ansible_become_method=sudo
 ansible_python_interpreter=/usr/bin/python3
 
-bootstrap_token=9a08jv.c0izixklcxtmnze7
-cluster_name=maduzzCluster
-podSubnet=10.128.58.0/24
+# bootstrap_token=9a08jv.c0izixklcxtmnze7
+cluster_name=hlab-cluster
+pod_cidr=10.14.0.0/16
+service_cidr=10.100.0.0/12
+kubernetes_major_minor=1.33
+kubernetes_version={{ kubernetes_major_minor }}.1
+vip_address=192.168.180.100
+control_plane_endpoint={{ vip_address }}:8443
+vip_interface=ens3
+cri_socket=unix:///var/run/cri-dockerd.sock
+calico_version=3.32.0
 
 [cluster:children]
 masternode
 workernodes
 
 [masternode]
-192.168.180.180 hostname=master180
+192.168.180.123 hostname=master01 keepalived_priority=101
+192.168.180.124 hostname=master02 keepalived_priority=100
+192.168.180.125 hostname=master03 keepalived_priority=99
 
 [workernodes]
-192.168.180.206 hostname=worker206
-192.168.180.129 hostname=worker129
-192.168.180.225 hostname=worker225
-
+192.168.180.134 hostname=worker01
+192.168.180.135 hostname=worker02
+192.168.180.136 hostname=worker03

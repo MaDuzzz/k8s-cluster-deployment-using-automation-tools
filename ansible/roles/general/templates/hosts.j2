@@ -1,0 +1,12 @@
+127.0.0.1 localhost
+127.0.1.1 {{ hostname }}
+
+# --- Master Nodes ---
+{% for host in groups['masternode'] %}
+{{ host }} {{ hostvars[host]['hostname'] }}
+{% endfor %}
+
+# --- Worker Nodes ---
+{% for host in groups['workernodes'] %}
+{{ host }} {{ hostvars[host]['hostname'] }}
+{% endfor %}

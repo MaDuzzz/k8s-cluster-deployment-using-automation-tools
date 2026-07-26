@@ -1,0 +1,7 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "{{ groups['masternode'][0] }}"
+  bindPort: 6443
+nodeRegistration:
+  criSocket: "{{ cri_socket }}"

@@ -3,28 +3,60 @@
   hosts: cluster
   become: true
   remote_user: "{{ ansible_user }}"
+  gather_facts: true
   roles:
     - general
     - docker
     - k8s-general
 
-- name: Prepare and Initialize cluster
+- name: Config vip address for master node
   hosts: masternode
   become: true
   remote_user: "{{ ansible_user }}"
+  gather_facts: true
   roles:
-    - k8s-masternode
+    - role: vip_config
+      tags: keepalived
+    - role: loadbalancer
+      tags: haproxy
+
+- name: Prepare and Initialize first master node
+  hosts: masternode[0]
+  become: true
+  remote_user: "{{ ansible_user }}"
+  roles:
+    - k8s-initmaster
+
+- name: Join all master nodes into cluster
+  hosts: masternode[1:]
+  become: true
+  remote_user: "{{ ansible_user }}"
+  roles:
+    - k8s-joinmaster
 
 - name: Join all worker nodes into cluster
   hosts: workernodes
   become: true
   remote_user: "{{ ansible_user }}"
   roles:
-    - k8s-workernodes
+    - k8s-joinworker
+# - name: Prepare and Initialize cluster
+#   hosts: masternode
+#   become: true
+#   remote_user: "{{ ansible_user }}"
+#   roles:
+#     - k8s-masternode
 
-- name: Install Calico Network Plugin on master node
-  hosts: masternode
-  become: true
-  remote_user: "{{ ansible_user }}"
-  roles:
-    - calico
+# - name: Join all worker nodes into cluster
+#   hosts: workernodes
+#   become: true
+#   remote_user: "{{ ansible_user }}"
+#   roles:
+#     - k8s-workernodes
+
+# - name: Install Calico Network Plugin on master node
+#   hosts: masternode
+#   become: true
+#   remote_user: "{{ ansible_user }}"
+#   roles:
+#     - calico

@@ -31,7 +31,7 @@
         mode: "0755"
     - name: Download Kubernetes APT Release key
       ansible.builtin.get_url:
-        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+        url: https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_major_minor }}/deb/Release.key
         dest: /tmp/Release.key
         mode: "0755"
 
@@ -45,7 +45,7 @@
     - name: Add Kubernetes APT repository to sources list
       ansible.builtin.lineinfile:
         path: /etc/apt/sources.list.d/kubernetes.list
-        line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+        line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_major_minor }}/deb/ /"
         create: true
         mode: "0755"
 
@@ -71,52 +71,52 @@
     name: "cri-docker.service"
   register: cridocker_service
 
-# - name: Print cri-docker service status
-#   ansible.builtin.debug:
-#     var: cridocker_service
+- name: Print cri-docker service status
+  ansible.builtin.debug:
+    var: cridocker_service
 
 - name: Check if cri-dockered service installed already
   when: cridocker_service.status.ActiveState != "active"
   block:
     - name: Get cri-dockered debian installation file from github
       ansible.builtin.get_url:
-        url: https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+        url: https://github.com/Mirantis/cri-dockerd/releases/download/v0.4.4/cri-dockerd_0.4.4.3-0.ubuntu-focal_amd64.deb
         dest: /tmp/
         mode: "0664"
 
     - name: Install cri-dockered
       ansible.builtin.apt:
-        deb: /tmp/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+        deb: /tmp/cri-dockerd_0.4.4.3-0.ubuntu-focal_amd64.deb
 
     - name: Clean up cri-dockered debian file
       ansible.builtin.file:
-        path: /tmp/cri-dockerd_0.3.14.3-0.ubuntu-focal_amd64.deb
+        path: /tmp/cri-dockerd_0.4.4.3-0.ubuntu-focal_amd64.deb
         state: absent
 
-- name: Check if crictl tool installed already
-  ansible.builtin.command: crictl --version
-  register: crictl_installed
-  changed_when: false
+# - name: Check if crictl tool installed already
+#   ansible.builtin.command: crictl --version
+#   register: crictl_installed
+#   changed_when: false
 
-- name: Install crictl tool (if needed)
-  when: crictl_installed.failed
-  block:
-    - name: Get crictl installation file from github
-      ansible.builtin.get_url:
-        url: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.0/crictl-v1.31.0-linux-amd64.tar.gz
-        dest: /tmp/
-        mode: "0664"
+# - name: Install crictl tool (if needed)
+#   when: crictl_installed.failed
+#   block:
+#     - name: Get crictl installation file from github
+#       ansible.builtin.get_url:
+#         url: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.0/crictl-v1.31.0-linux-amd64.tar.gz
+#         dest: /tmp/
+#         mode: "0664"
 
-    - name: Extract crictl binary
-      ansible.builtin.unarchive:
-        src: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
-        dest: /usr/local/bin
-        remote_src: true
+#     - name: Extract crictl binary
+#       ansible.builtin.unarchive:
+#         src: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
+#         dest: /usr/local/bin
+#         remote_src: true
 
-    - name: Clean up crictl tarball
-      ansible.builtin.file:
-        path: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
-        state: absent
+#     - name: Clean up crictl tarball
+#       ansible.builtin.file:
+#         path: /tmp/crictl-v1.31.0-linux-amd64.tar.gz
+#         state: absent
 
 - name: Execute modprobe to load br_netfilter
   command: modprobe br_netfilter
